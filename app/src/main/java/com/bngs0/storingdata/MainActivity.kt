@@ -3,6 +3,7 @@ package com.bngs0.storingdata
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
@@ -14,7 +15,6 @@ class MainActivity : android.app.Activity() {
     private lateinit var sharedPreferences : SharedPreferences
 
     var name : String = ""
-
     var userName : String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,56 +27,46 @@ class MainActivity : android.app.Activity() {
         sharedPreferences = this.getSharedPreferences("package com.bngs0.storingdata",Context.MODE_PRIVATE)
 
         userName = sharedPreferences.getString("name","") // sharedpref de bir değer varsa onu çekiyor
-        if (userName == ""){
-            binding.resultText.text = "Hoşgeldin!"
-        } else{
-            binding.resultText.text = "Hoşgeldin, ${userName}!"
+
+        // intent (second activity'den geldiyse)
+        val intentInfo = intent.getIntExtra("back",0) //getIntent() metodu ile aynı şey intent
+        if (intentInfo == 0){// Second Activity'den gelmediysem
+            if (userName != null && !userName!!.isEmpty()){
+                val intent = Intent(this@MainActivity, SecondActivity::class.java)
+                intent.putExtra("name",userName)
+                startActivity(intent)
+            }
+        }else if (intentInfo == 1){ //Second Activity'den geldiysem
+            Toast.makeText(this,"Second Activity'den döndün",Toast.LENGTH_SHORT).show()
+        }else{ // hata durumu
+            println("intent hatası\nintent: ${intentInfo}")
         }
 
-        //button listener
-        buttonListener()
 
-    }
 
-    private fun buttonListener() {
         //kaydet butonu
         binding.saveButton.setOnClickListener { saveButton() }
 
-        //silme butonu
-        binding.deleteButton.setOnClickListener { deleteButton() }
-    }
-
-    fun MainActivity.deleteButton() {
-        //silme alert dialog
-        val alert = AlertDialog.Builder(this@MainActivity)
-        alert.setTitle("Silmek istediğinize emin misiniz?")
-        alert.setMessage("Sildiğiniz veriye geri ulaşamayacaksınız yine de silecek misiniz?")
-        alert.setPositiveButton("Evet", object : DialogInterface.OnClickListener{
-            override fun onClick(dialog: DialogInterface?, which: Int) {
-                // silme işlemi
-                if (userName != null){
-                    binding.resultText.text = "Hoşgeldin!"
-                    Toast.makeText(this@MainActivity,"Başarıyla Silindi",Toast.LENGTH_SHORT).show()
-                    sharedPreferences.edit().remove("name").apply()
-                }
-            }
-        })
-        alert.setNegativeButton("Hayır", object: DialogInterface.OnClickListener{
-            override fun onClick(dialog: DialogInterface?, which: Int) {
-                Toast.makeText(this@MainActivity,"Silinmedi",Toast.LENGTH_SHORT).show()
-            }
-        })
-        alert.show()
     }
 
     fun MainActivity.saveButton() {
         // kaydetme işlemi
         name = binding.nameText.text.toString()
 
-
-        if (name != null && !name.isEmpty()){
-            binding.resultText.text = "Hoşgeldin, ${name}!"
-            sharedPreferences.edit().putString("name",name).apply()
+        if (userName != null && !userName!!.isEmpty()){ //sharedpref doluysa ve save'e basıldıysa direkt seconda geç
+            val intent = Intent(this@MainActivity, SecondActivity::class.java)
+            intent.putExtra("name",userName)
+            startActivity(intent)
+        }else {
+            if ((name != null && !name.isEmpty())) {
+                sharedPreferences.edit().putString("name", name).apply()
+                val intent = Intent(this@MainActivity, SecondActivity::class.java)
+                intent.putExtra("name", name)
+                startActivity(intent)
+            } else {
+                Toast.makeText(this@MainActivity, "Lütfen adınızı giriniz!", Toast.LENGTH_SHORT)
+                    .show()
+            }
         }
 
 
