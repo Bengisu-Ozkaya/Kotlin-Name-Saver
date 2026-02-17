@@ -1,8 +1,12 @@
 package com.bngs0.storingdata
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.widget.Toast
+import androidx.compose.material3.AlertDialog
 import com.bngs0.storingdata.databinding.ActivityMainBinding
 
 class MainActivity : android.app.Activity() {
@@ -43,11 +47,26 @@ class MainActivity : android.app.Activity() {
     }
 
     fun MainActivity.deleteButton() {
-        // silme işlemi
-        if (userName != ""){
-            binding.resultText.text = "Hoşgeldin!"
-            sharedPreferences.edit().remove("name").apply()
-        }
+        //silme alert dialog
+        val alert = AlertDialog.Builder(this@MainActivity)
+        alert.setTitle("Silmek istediğinize emin misiniz?")
+        alert.setMessage("Sildiğiniz veriye geri ulaşamayacaksınız yine de silecek misiniz?")
+        alert.setPositiveButton("Evet", object : DialogInterface.OnClickListener{
+            override fun onClick(dialog: DialogInterface?, which: Int) {
+                // silme işlemi
+                if (userName != null){
+                    binding.resultText.text = "Hoşgeldin!"
+                    Toast.makeText(this@MainActivity,"Başarıyla Silindi",Toast.LENGTH_SHORT).show()
+                    sharedPreferences.edit().remove("name").apply()
+                }
+            }
+        })
+        alert.setNegativeButton("Hayır", object: DialogInterface.OnClickListener{
+            override fun onClick(dialog: DialogInterface?, which: Int) {
+                Toast.makeText(this@MainActivity,"Silinmedi",Toast.LENGTH_SHORT).show()
+            }
+        })
+        alert.show()
     }
 
     fun MainActivity.saveButton() {
